@@ -40,7 +40,7 @@ def download_inria():
 		u = urllib.request.urlopen(url)
 		f = open(file_name, 'wb')
 		meta = u.info()
-		print ("meta",meta.getheaders)
+		print ("meta",meta)
 		file_size = int(meta.getheaders("Content-Length")[0])
 		#file_size =
 		print ("Downloading: %s Bytes: %s" % (file_name, file_size))
