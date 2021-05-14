@@ -12,6 +12,7 @@ import os, tarfile
 import h5py
 
 import urllib
+import time
 
 def resize_scale_img(path, dims = (180, 320), scale = False):
 	img = skimage.io.imread(path)
@@ -39,7 +40,9 @@ def download_inria():
 		u = urllib.request.urlopen(url)
 		f = open(file_name, 'wb')
 		meta = u.info()
+		print ("meta",meta)
 		file_size = int(meta.getheaders("Content-Length")[0])
+		file_size =
 		print ("Downloading: %s Bytes: %s" % (file_name, file_size))
 
 		file_size_dl = 0
@@ -177,7 +180,6 @@ def write_to_disk(X, Y, f_name, ds_ext):
 # -------------------------------------------------------------- #
 
 def main():
-	import time
 	start = time.time()
 
 	if os.path.exists('inria_stereo_dataset/'):
@@ -190,7 +192,6 @@ def main():
 
 	end = time.time()
 	print ("Extraction Completed... Took " + str((end - start)/60) + " minutes")
-
 
 
 if __name__ == "__main__":
