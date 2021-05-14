@@ -98,7 +98,7 @@ def load_inria_frame(dims = (180,320), terminate = None, prob = 0.2):
 
 	# Add directories
 	if not os.path.exists(os.path.join(cur_dir, "frames")):
-		print "Creating Frames Folder... "
+		print ("Creating Frames Folder... ")
 		os.makedirs(os.path.join(cur_dir, "frames", "train", "left"))
 		os.makedirs(os.path.join(cur_dir, "frames", "train", "right"))
 		os.makedirs(os.path.join(cur_dir, "frames", "test", "left"))
@@ -169,7 +169,7 @@ def load_inria_frame(dims = (180,320), terminate = None, prob = 0.2):
 
 # H5 Writing to Disk Function
 def write_to_disk(X, Y, f_name, ds_ext):
-	print "Writing " + "X_/Y_" + ds_ext + " to " + f_name
+	print ("Writing " + "X_/Y_" + ds_ext + " to " + f_name)
 	h5f = h5py.File(f_name, 'a')
 	h5f.create_dataset('X_'+ds_ext, data=X)
 	h5f.create_dataset('Y_'+ds_ext, data=Y)
