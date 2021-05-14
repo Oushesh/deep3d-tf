@@ -130,7 +130,7 @@ def load_inria_frame(dims = (180,320), terminate = None, prob = 0.2):
 
 	# Create seeded mask for determining Test/Train Split
 	np.random.seed(100)
-	test_mask = np.random.choice([0,1], size =(terminate_count/2,), p = [1-prob, prob])
+	test_mask = np.random.choice([0,1], size =(terminate_count//2,), p = [1-prob, prob])
 
 
 	# The actual walk
@@ -144,7 +144,7 @@ def load_inria_frame(dims = (180,320), terminate = None, prob = 0.2):
 					r_frame = resize_scale_img(path+r_ext, dims)
 
 					# Write back to disk in designated Folder
-					if test_mask[count/2] == 0:
+					if test_mask[count//2] == 0:
 						folder = "train"
 					else:
 						folder = "test"
