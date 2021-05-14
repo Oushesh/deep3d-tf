@@ -11,6 +11,8 @@ import numpy as np
 import os, tarfile
 import h5py
 
+import urllib
+
 def resize_scale_img(path, dims = (180, 320), scale = False):
 	img = skimage.io.imread(path)
 
@@ -21,12 +23,9 @@ def resize_scale_img(path, dims = (180, 320), scale = False):
 
 	# Resize
 	resized_img = skimage.transform.resize(img, dims, mode = "reflect")
-
 	return resized_img
 
 def download_inria():
-	import urllib2
-
 	urls = ["http://www.di.ens.fr/willow/research/stereoseg/dataset/inria_stereo_dataset_segmentation.tar",
 			"http://www.di.ens.fr/willow/research/stereoseg/dataset/inria_stereo_dataset_video_segmentation.tar",
 			"http://www.di.ens.fr/willow/research/stereoseg/dataset/inria_stereo_dataset_persondetection_train.tar",
@@ -35,10 +34,9 @@ def download_inria():
 			"http://www.di.ens.fr/willow/research/stereoseg/dataset/inria_stereo_dataset_poseestimation_test.tar",
 			"http://www.di.ens.fr/willow/research/stereoseg/dataset/inria_stereo_dataset_negatives.tar"]
 
-
 	for url in urls:
 		file_name = url.split('/')[-1]
-		u = urllib2.urlopen(url)
+		u = urllib.request.urlopen(url)
 		f = open(file_name, 'wb')
 		meta = u.info()
 		file_size = int(meta.getheaders("Content-Length")[0])
