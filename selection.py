@@ -18,17 +18,17 @@ def select(masks, left_image, left_shift=16, name="select"):
     _, H, W, S = masks.get_shape().as_list()
     with tf.variable_scope(name):
         padded = tf.pad(left_image, [[0,0],[0,0],[left_shift, left_shift],[0,0]], mode='REFLECT')
-        
-        
+
+
 
         # padded is the image padded whatever the left_shift variable is on either side
         layers = []
         for s in np.arange(S):
             layers.append(tf.slice(padded, [0,0,s,0], [-1,H,W,-1]))
-        
+
         slices = tf.stack(layers, axis=4)
         disparity_image = tf.multiply(slices, tf.expand_dims(masks, axis=3))
-        
+
         return tf.reduce_sum(disparity_image, axis=4)
 
         #layers = tf.zeros_like(left_image)
@@ -36,7 +36,7 @@ def select(masks, left_image, left_shift=16, name="select"):
         #    mask_slice = tf.slice(masks, [0,0,0,s], [-1, H, W, 1])
         #    pad_slice  = tf.slice(padded, [0,0,s,0], [-1,H,W,-1])
         #    layers = tf.add(layers, tf.multiply(mask_slice, pad_slice))
-    
+
         #return layers
 
 
@@ -70,8 +70,8 @@ if __name__ == '__main__':
     sess = tf.InteractiveSession()
     image_contents = tf.read_file('./test_data/tiger.jpeg')
     image = tf.image.decode_jpeg(image_contents,channels=3)
-    print image.eval().shape
-    
+    print (image.eval().shape)
+
 def load_image(path):
     # load image
     img = skimage.io.imread(path)
@@ -81,4 +81,3 @@ def load_image(path):
     # resize to 224, 224
     resized_img = skimage.transform.resize(img, (180, 320))
     return resized_img
-

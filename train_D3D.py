@@ -10,27 +10,25 @@ import sys
 
 
 def train(in_path, out_path):
-    print "-- Training Deep3D --"
+    print ("-- Training Deep3D --")
 
-    # Calculate number of iterations 
+    # Calculate number of iterations
     batchsize = 30
     num_epochs = 5
-    left_dir = "/a/data/deep3d_data/frames2/left/"
-    right_dir = "/a/data/deep3d_data/frames2/right/"
+    left_dir = "frames/left/"
+    right_dir = "frames/right/"
     iter_per_epoch = (len(os.listdir(left_dir))/batchsize)
     num_iter = iter_per_epoch * num_epochs
-    print "Number of Training Iterations : " + str(num_iter)
-
+    print ("Number of Training Iterations : " + str(num_iter))
     validation_size = 2000
-    
-    # Learning Rates 
+
+    # Learning Rates
     lr = 0.00005
     # b1 = 0.9
     # b2 = 0.99
 
-    
     # Define CPU operations for filename queue and random shuffle batch queue
-    with tf.device('/cpu:0'):
+    with tf.device('/gpu:0'):
         left_image_queue = tf.train.string_input_producer(
           left_dir + tf.convert_to_tensor(os.listdir(left_dir)[:-validation_size:]),
           shuffle=False, num_epochs=num_epochs)
@@ -53,15 +51,15 @@ def train(in_path, out_path):
         right_image.set_shape([160,288,3])
 
         # preprocess image
-        batch = tf.train.shuffle_batch([left_image, right_image], 
+        batch = tf.train.shuffle_batch([left_image, right_image],
                                        batch_size = batchsize,
                                        capacity = 12*batchsize,
                                        num_threads = 1,
                                        min_after_dequeue = 4*batchsize)
-        
+
 
     # ------ GPU Operations ---------- #
-    # Define config for GPU memory debugging 
+    # Define config for GPU memory debugging
     config = tf.ConfigProto()
     config.gpu_options.allow_growth=True  # Switch to True for dynamic memory allocation instead of TF hogging BS
     config.gpu_options.per_process_gpu_memory_fraction= 1  # Cap TF mem usage
@@ -69,34 +67,33 @@ def train(in_path, out_path):
 
     # Session
     sess = tf.Session(config=config)
-
     # Placeholders
     images = tf.placeholder(tf.float32, [None, 160, 288, 3], name='input_batch')
     true_out = tf.placeholder(tf.float32, [None, 160, 288, 3] , name='ground_truth')
     train_mode = tf.placeholder(tf.bool, name='train_mode')
 
-    # Building Net based on VGG weights 
+    # Building Net based on VGG weights
     net = deep3d.Deep3Dnet(in_path, dropout = 0.5)
     net.build(images, train_mode)
 
     # Print number of variables used
-    print 'Variable count:'
-    print(net.get_var_count())
+    print ('Variable count:')
+    print (net.get_var_count())
 
     # Define Training Objectives
     with tf.variable_scope("Loss"):
         cost = tf.reduce_sum(tf.abs(net.prob - true_out))/batchsize
 
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-    with tf.control_dependencies(update_ops): 
+    with tf.control_dependencies(update_ops):
         train = tf.train.AdamOptimizer(learning_rate=lr).minimize(cost)
-    # Run initializer 
+    # Run initializer
     sess.run(tf.global_variables_initializer())
-    sess.run(tf.local_variables_initializer()) 
+    sess.run(tf.local_variables_initializer())
     coord = tf.train.Coordinator()
     queue_threads = tf.train.start_queue_runners(coord=coord, sess=sess)
 
-    # Track Cost    
+    # Track Cost
     tf.summary.scalar('cost', cost)
     # Tensorboard operations to compile summary and then write into logs
     merged = tf.summary.merge_all()
@@ -104,20 +101,20 @@ def train(in_path, out_path):
 
 
     # ---------- Training Loop --------------- #
-    print ""
-    print ">> Start training <<"
-    
+    print ("")
+    print (">> Start training <<")
+
     print_step = 1
     save_step = 25
-    print "saving every " + str(save_step) + " iterations"
-    
+    print ("saving every " + str(save_step) + " iterations")
+
     # Base case data fetch
     next_batch = sess.run(batch)
     count = 0
     try:
         while not coord.should_stop():
             # Traing Step
-            _, cost_val, next_batch, summary,up_conv = sess.run([train, cost, batch, merged,net.up_conv], 
+            _, cost_val, next_batch, summary,up_conv = sess.run([train, cost, batch, merged,net.up_conv],
                                                                 feed_dict={images: next_batch[0],
                                                                            true_out: next_batch[1],
                                                                            train_mode: True})
@@ -125,9 +122,9 @@ def train(in_path, out_path):
             if count%print_step == 0:
                 print str(count).ljust(10) + ' | Cost: ' + str(cost_val).ljust(10) + ' | UpConv Max: ' + str(np.mean(up_conv, axis =(0,1,2)).max())
             if count%save_step == 0:
-                print "Checkpoint Save"
+                print ("Checkpoint Save")
                 net.save_npy(sess, npy_path = out_path)
-            count = count + 1     
+            count = count + 1
 
     except tf.errors.OutOfRangeError:
         print('Done training -- epoch limit reached')
@@ -137,17 +134,17 @@ def train(in_path, out_path):
         coord.request_stop()
 
     # Store Final Traing Output
-    print ""
-    print "Training Completed, storing weights"
+    print ("")
+    print ("Training Completed, storing weights")
     net.save_npy(sess, npy_path = out_path)
-                                                                                                       
-    # Terminate session                                                    
+
+    # Terminate session
     coord.join(queue_threads)
     sess.close()
-                    
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print "Invalid Arguements. Give 1) input weights file 2) output weight file"
+        print ("Invalid Arguements. Give 1) input weights file 2) output weight file")
     else:
         train(sys.argv[1], sys.argv[2])
