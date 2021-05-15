@@ -2,15 +2,12 @@
 
 import sys
 import shutil
-
 import skimage
 import skimage.io
 import skimage.transform
-
 import numpy as np
 import os, tarfile
 import h5py
-
 import urllib
 import time
 
@@ -21,7 +18,6 @@ def resize_scale_img(path, dims = (180, 320), scale = False):
 	if scale:
 		img = img / 255.0
 		assert (0 <= img).all() and (img <= 1.0).all()
-
 	# Resize
 	resized_img = skimage.transform.resize(img, dims, mode = "reflect")
 	return resized_img
